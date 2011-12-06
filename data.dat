@@ -1,0 +1,10 @@
+data;
+
+param xi := 20; 
+param yi := 5; 
+param zi := 0; 
+param xf := 15; 
+param yf := 25; 
+param zf := 0; 
+end;
+
