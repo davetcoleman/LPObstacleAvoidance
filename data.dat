@@ -1,10 +1,25 @@
 data;
 
-param xi := 20; 
+param xi := 14; 
 param yi := 5; 
 param zi := 0; 
 param xf := 15; 
 param yf := 25; 
 param zf := 0; 
+param xo1 := 10; 
+param yo1 := 10; 
+param zo1 := 0; 
+param xo2 := 20; 
+param yo2 := 10; 
+param zo2 := 0; 
+param xo3 := 20; 
+param yo3 := 20; 
+param zo3 := 0; 
+param xo4 := 10; 
+param yo4 := 20; 
+param zo4 := 0; 
+param xm := 30; 
+param ym := 30; 
+param zm := 30; 
 end;
 

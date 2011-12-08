@@ -5,7 +5,7 @@ void draw_lp(void){
 
 	// Draw initial point
 	coord initPoint;
-	initPoint.x = 20; initPoint.y = 5; initPoint.z = 0;
+	initPoint.x = 14; initPoint.y = 5; initPoint.z = 0;
 	renderPoint(initPoint);
 
 	// Draw final point
@@ -20,6 +20,10 @@ void draw_lp(void){
 	window[2].x = 0; window[2].y = 100; window[2].z = 0;
 	renderPolygon(window, 3);
 
+	// Max workspace
+	coord max;
+	max.x = 30; max.y = 30; max.z = 30;
+	
 	// Draw obstacle
 	coord obstacle[4];
 	obstacle[0].x = 10; obstacle[0].y = 10; obstacle[0].z = 0; // top left, clockwise
@@ -31,12 +35,21 @@ void draw_lp(void){
 	// Output points to data file for GLPK
 	ofstream data("data.dat");
 	data << "data;\n\n";
+	
 	printCoord(initPoint, "i", data);
-	printCoord(finPoint, "f", data);	
+	printCoord(finPoint, "f", data);
+	printCoord(obstacle[0], "o1", data);
+	printCoord(obstacle[1], "o2", data);
+	printCoord(obstacle[2], "o3", data);
+	printCoord(obstacle[3], "o4", data);
+	printCoord(max, "m", data);
+	
+	
 	data << "end;\n\n";
 	data.close();
 
 	// Run the GLPK ampl file and output results to screen
+	remove("result.dat"); // delete old file first to prevent displaying when there is an error	
 	FILE* pipe = popen("glpsol --math lp_problem.ampl --data data.dat", "r");
 	if (!pipe)
 		cout << "ERROR";
@@ -49,6 +62,12 @@ void draw_lp(void){
 
 	// Input results file for plotting
 	ifstream result("result.dat");
+
+	// Error Check
+	if ( !result.is_open()) {
+		cout << "Error opening results file. Probably glpk solver had error." << endl;
+		return;
+	}
 
 	// Draw point 1
 	coord point1;
