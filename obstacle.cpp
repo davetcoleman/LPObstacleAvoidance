@@ -5,7 +5,7 @@ void draw_lp(void){
 
 	// Draw initial point
 	coord initPoint;
-	initPoint.x = 14; initPoint.y = 5; initPoint.z = 0;
+	initPoint.x = 10; initPoint.y = 5; initPoint.z = 0;
 	renderPoint(initPoint);
 
 	// Draw final point
@@ -13,6 +13,10 @@ void draw_lp(void){
 	finPoint.x = 15; finPoint.y = 25; finPoint.z = 0;
 	renderPoint(finPoint);	
 
+	// Calc distance between two points to get number of needed points for program
+	//int N = sqrt(finPoint.x - initPoint.x, 2) + pow(finPoint.y - initPoint.y, 2) );
+	int N = abs(finPoint.x - initPoint.x) + abs(finPoint.y - initPoint.y);
+	
 	// Draw coordinates
 	coord window[3];
 	window[0].x = 100; window[0].y = 0; window[0].z = 0; // top left, clockwise
@@ -30,11 +34,12 @@ void draw_lp(void){
 	obstacle[1].x = 20; obstacle[1].y = 10; obstacle[1].z = 0;
 	obstacle[2].x = 20; obstacle[2].y = 20; obstacle[2].z = 0;
 	obstacle[3].x = 10; obstacle[3].y = 20; obstacle[3].z = 0;
-	renderPolygonFilled(obstacle, 4);	
+	//renderPolygonFilled(obstacle, 4);	
 
 	// Output points to data file for GLPK
 	ofstream data("data.dat");
 	data << "data;\n\n";
+	data << "param N := " << N << ";\n";
 	
 	printCoord(initPoint, "i", data);
 	printCoord(finPoint, "f", data);
@@ -50,7 +55,8 @@ void draw_lp(void){
 
 	// Run the GLPK ampl file and output results to screen
 	remove("result.dat"); // delete old file first to prevent displaying when there is an error	
-	FILE* pipe = popen("glpsol --math lp_problem.ampl --data data.dat", "r");
+	FILE* pipe = popen("glpsol --math lp_problem2.ampl --data data.dat", "r");
+
 	if (!pipe)
 		cout << "ERROR";
 	char buffer[128];
@@ -59,32 +65,45 @@ void draw_lp(void){
 			cout << buffer;
 	}
 	pclose(pipe);
-
+	cout << "\n ----------------------------------------------------------- \n";
+	
 	// Input results file for plotting
 	ifstream result("result.dat");
 
 	// Error Check
 	if ( !result.is_open()) {
 		cout << "Error opening results file. Probably glpk solver had error." << endl;
-		return;
+		exit(1);
 	}
 
-	// Draw point 1
-	coord point1;
-	result >> point1.x >> point1.y >> point1.z;
-	renderPoint(point1);
-	debugPoint(point1);
+	// Input first number and check
+	int check;
+	result >> check;
+	if(check != 999){
+		cout << "Error in file format." << endl;
+		exit(1);		
+	}
+
+	coord path[N+2];
+	path[0] = initPoint;
+	int i = 1;
 	
-	// Draw point 2
-	coord point2;
-	result >> point2.x >> point2.y >> point2.z;
-	renderPoint(point2);
-	debugPoint(point2);
-
+	while(i < N + 1)
+	{
+		// Draw point
+		coord point1;
+		result >> point1.x >> point1.y;
+		point1.z = 0;
+		path[i] = point1;
+		renderPoint(point1);
+		debugPoint(point1);
+		i++;
+	}
+	
 	// Draw path
-	coord path[4] = { initPoint, point1, point2, finPoint };
-	renderPolygon(path, 4);
-
+	path[i] = finPoint;
+	renderPolygon(path, N+2);
+	
 }
 
 void debugPoint(coord point)
