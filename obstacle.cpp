@@ -5,17 +5,17 @@ void draw_lp(void){
 
 	// Draw initial point
 	coord initPoint;
-	initPoint.x = 10; initPoint.y = 5; initPoint.z = 0;
+	initPoint.x = 13; initPoint.y = 5; initPoint.z = 0;
 	renderPoint(initPoint);
 
 	// Draw final point
 	coord finPoint;
-	finPoint.x = 15; finPoint.y = 25; finPoint.z = 0;
+	finPoint.x = 16; finPoint.y = 25; finPoint.z = 0;
 	renderPoint(finPoint);	
 
 	// Calc distance between two points to get number of needed points for program
 	//int N = sqrt(finPoint.x - initPoint.x, 2) + pow(finPoint.y - initPoint.y, 2) );
-	int N = abs(finPoint.x - initPoint.x) + abs(finPoint.y - initPoint.y);
+	int N = 1.25*abs(finPoint.x - initPoint.x) + abs(finPoint.y - initPoint.y);
 	
 	// Draw coordinates
 	coord window[3];
@@ -34,7 +34,7 @@ void draw_lp(void){
 	obstacle[1].x = 20; obstacle[1].y = 10; obstacle[1].z = 0;
 	obstacle[2].x = 20; obstacle[2].y = 20; obstacle[2].z = 0;
 	obstacle[3].x = 10; obstacle[3].y = 20; obstacle[3].z = 0;
-	//renderPolygonFilled(obstacle, 4);	
+	renderPolygonFilled(obstacle, 4);	
 
 	// Output points to data file for GLPK
 	ofstream data("data.dat");

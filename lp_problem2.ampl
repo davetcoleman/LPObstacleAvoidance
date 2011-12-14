@@ -18,32 +18,54 @@ param xm; param ym; param zm;
 # Other Parameters ------------------------------------------------------------
 
 param N default 4; # number of time steps / points
-param NN := N -1;
+param NN := N - 1;
+param M := 100; # arbitrary large positive number
+param E := 4;
 
 set T := 1..N;	  # number of time steps / points
 set TT := 1..NN;  # one less than number of time steps
 set D := 1..2;    # 2 dimensions: x and y
 set C := 1..4;    # number of manually created abs constraints
+set Edges := 1..E; # number of total edges in polygons
 
 # Variables to Solve for -------------------------------------------------------
 
-var points{t in T, d in D} >= 0;                        /* answer to problem */
-var abs1{t in TT, d in D};
-var abs2{c in C};
+var points{t in T, d in D} >= 0;  # set of x,y points for problem solution
+var abs1{t in TT, d in D};        # middle steps
+var abs2{c in C};                 # initial and final steps
+var abs3{t in TT};                # optimize for hypotenues
+#var abs4{c in C};                 # limit distance in initial and final steps
+var orer{t in T, e in Edges}  binary; # vars used for doing ORs
 
-minimize distance: (sum{c in C} abs2[c]) + (sum{ t in TT, d in D } abs1[t,d]);
+# Objective Function -----------------------------------------------------------
+minimize distance: sum{t in TT, d in D} abs1[t,d] +      # all constraints between initial and final
+	           sum{c in C} abs2[c] +                 # initial and final point constraints
+                   .5*sum{t in TT} abs3[t];                 # optimize hypotenus
 
-# Square obstacle
-#s.t. obs
+# Constraints ------------------------------------------------------------------
 
 # Absolute Distance between midpoints
 s.t. abs_min{t in TT, d in D}:  points[t+1,d] - points[t,d] - abs1[t,d] <= 0;
 s.t. abs_max{t in TT, d in D}: -points[t+1,d] + points[t,d] - abs1[t,d] <= 0;
 
-s.t. abs_diff{t in TT}: abs1[t,1] + abs1[t,2] >= 1;
+# Point to point distance limiter - more than 1 less than 2
+#s.t. abs_diff1{t in TT}: abs1[t,1] + abs1[t,2] >= 1;
+s.t. abs_diff2{t in TT}: abs1[t,1] + abs1[t,2] <= 1.5;
 
+# Point to point distance limiter for init and end
+s.t. abs_diff3: abs2[1] + abs2[2] <= 4;
+s.t. abs_diff4: abs2[3] + abs2[4] <= 4;
 
-#s.t. abs_max{t in TT, d in D}: abs1[t,d] <= 0;
+# ABS Distance Between change in x and y per point - optimize to hypotenus
+s.t. abs_diff5{t in TT}:  abs1[t,1] - abs1[t,2] - abs3[t] <= 0;
+s.t. abs_diff6{t in TT}: -abs1[t,1] + abs1[t,2] - abs3[t] <= 0;
+
+# Obstacle Constraints - Square
+s.t. obst1{t in TT}:  points[t,1] <=  xo1 + M*orer[t,1]; # x_min
+s.t. obst2{t in TT}: -points[t,1] <= -xo2 + M*orer[t,2]; # x_max
+s.t. obst3{t in TT}:  points[t,2] <=  yo1 + M*orer[t,3]; # y_min
+s.t. obst4{t in TT}: -points[t,2] <= -yo3 + M*orer[t,4]; # y_max
+s.t. obst5{t in TT}: sum{e in Edges} orer[t,e] <= E-1; # at least one must be true
 
 # Initial X Axis
 s.t. a1:  points[1,1] - xi - abs2[1] <= 0; 
@@ -61,17 +83,10 @@ s.t. a6: -points[N,1] + xf - abs2[3] <= 0;
 s.t. a7:  points[N,2] - yf - abs2[4] <= 0; 
 s.t. a8: -points[N,2] + yf - abs2[4] <= 0; 
 
-
-#minimize dist: f(points[1,1],15) + points[2,1] - 5 + sum{d in D, t in T} points[t,d];   /* manhattan distance */
-
-#s.t. piecewise{t in T}: <<1-AM,P1,3,5; -5, -1,0,1.5,3>> points[1,t];
-
-#s.t. supply{d in D}: sum{j in T} x[i,j] <= a[i];	/* observe supply limit at plant d */
-
-#s.t. demand{j in T}: sum{d in D} x[i,j] >= b[j];	/* satisfy demand at market j */
+# Solve -----------------------------------------------------------------------
 
 solve;
-display points;
+#display points;
 
 
 printf: "%d\n", 999 > "result.dat";

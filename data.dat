@@ -1,10 +1,10 @@
 data;
 
-param N := 25;
-param xi := 10; 
+param N := 23;
+param xi := 13; 
 param yi := 5; 
 param zi := 0; 
-param xf := 15; 
+param xf := 16; 
 param yf := 25; 
 param zf := 0; 
 param xo1 := 10; 
