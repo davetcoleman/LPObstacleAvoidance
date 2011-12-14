@@ -5,36 +5,33 @@ void draw_lp(void){
 
 	// Draw initial point
 	coord initPoint;
-	initPoint.x = 13; initPoint.y = 5; initPoint.z = 0;
-	renderPoint(initPoint);
-
+	initPoint.x = 20; initPoint.y = 5; initPoint.z = 0;
+	
 	// Draw final point
 	coord finPoint;
 	finPoint.x = 16; finPoint.y = 25; finPoint.z = 0;
-	renderPoint(finPoint);	
 
 	// Calc distance between two points to get number of needed points for program
 	//int N = sqrt(finPoint.x - initPoint.x, 2) + pow(finPoint.y - initPoint.y, 2) );
-	int N = 1.25*abs(finPoint.x - initPoint.x) + abs(finPoint.y - initPoint.y);
+	int N = 1.5*abs(finPoint.x - initPoint.x) + abs(finPoint.y - initPoint.y);
 	
 	// Draw coordinates
 	coord window[3];
 	window[0].x = 100; window[0].y = 0; window[0].z = 0; // top left, clockwise
 	window[1].x = 0; window[1].y = 0; window[1].z = 0;
 	window[2].x = 0; window[2].y = 100; window[2].z = 0;
-	renderPolygon(window, 3);
 
 	// Max workspace
 	coord max;
 	max.x = 30; max.y = 30; max.z = 30;
 	
-	// Draw obstacle
-	coord obstacle[4];
-	obstacle[0].x = 10; obstacle[0].y = 10; obstacle[0].z = 0; // top left, clockwise
+	// Draw polygon of E edges
+	int E = 4;
+	coord obstacle[E];
+	obstacle[0].x = 10; obstacle[0].y = 15; obstacle[0].z = 0; // bottom left, counter clockwise
 	obstacle[1].x = 20; obstacle[1].y = 10; obstacle[1].z = 0;
-	obstacle[2].x = 20; obstacle[2].y = 20; obstacle[2].z = 0;
+	obstacle[2].x = 25; obstacle[2].y = 15; obstacle[2].z = 0;
 	obstacle[3].x = 10; obstacle[3].y = 20; obstacle[3].z = 0;
-	renderPolygonFilled(obstacle, 4);	
 
 	// Output points to data file for GLPK
 	ofstream data("data.dat");
@@ -43,16 +40,86 @@ void draw_lp(void){
 	
 	printCoord(initPoint, "i", data);
 	printCoord(finPoint, "f", data);
-	printCoord(obstacle[0], "o1", data);
-	printCoord(obstacle[1], "o2", data);
-	printCoord(obstacle[2], "o3", data);
-	printCoord(obstacle[3], "o4", data);
-	printCoord(max, "m", data);
+
+	data << "param obst :   1   2  3 := \n";
+
+	int x_max = 0;
+	int x_min = 0;
+
+	/*
+	obstacle[0].x = 10; obstacle[0].y = 15; obstacle[0].z = 0; // bottom left, counter clockwise
+	obstacle[1].x = 20; obstacle[1].y = 10; obstacle[1].z = 0;
+	obstacle[2].x = 25; obstacle[2].y = 15; obstacle[2].z = 0;
+	obstacle[3].x = 10; obstacle[3].y = 20; obstacle[3].z = 0;
+	*/
 	
+	// First find the largest and smallest x and ensure the last x is not the same as the current one
+	for(int i = 0; i < E; ++i)
+	{
+		// Check that two consequitive x's are not the same
+		if(i == 0) { //check the last index
+			if( obstacle[0].x == obstacle[E - 1].x ) { // they are same
+				obstacle[0].x += .1; // add small amount
+			}
+		}else{
+			if(obstacle[i].x == obstacle[i - 1].x){ // they are same
+				obstacle[i].x += .1; // add small amount
+			}
+		}
+
+		// Check for largest/smallest
+		if(obstacle[x_max].x < obstacle[i].x)
+			x_max = i;
+		else if(obstacle[x_min].x > obstacle[i].x)
+			x_min = i;
+
+		cout << i << " " << obstacle[i].x << endl;
+	}
+
+	cout << " CHECK SEARCH " << x_max << " " << x_min << endl;
+
+	double m; // slope
+	double constraint; // y1 - m*x1
+	int direction = -1; ; // up 1, down -1
+	
+	int index = x_min;
+	coord temp1;
+	coord temp2;
+	// NOTE: array must be in order and counter-clockwise
+	for(int i = 0; i < E; ++i)
+	{
+		cout << "Index: " << index << endl;
+		
+		temp1 = obstacle[index];
+
+		// Now iterate
+		if(index == E-1)
+			index = 0;
+		else
+			index++;
+
+		temp2 = obstacle[index];
+
+		// Slope
+		m = (temp2.y - temp1.y) / (temp2.x - temp1.x);
+		// Constraint
+		constraint = temp1.y - m * temp1.x;
+			
+		data << i+1 << " " << m << " " << constraint << " " << direction << endl;
+
+		// Direction - flip if we've reached far right side
+		if(i == x_max)
+			direction = 1;
+		
+	}
+	data << ";" << endl;
+
 	
 	data << "end;\n\n";
 	data.close();
 
+	//exit(1);
+	
 	// Run the GLPK ampl file and output results to screen
 	remove("result.dat"); // delete old file first to prevent displaying when there is an error	
 	FILE* pipe = popen("glpsol --math lp_problem2.ampl --data data.dat", "r");
@@ -76,6 +143,13 @@ void draw_lp(void){
 		exit(1);
 	}
 
+	
+	// Draw initial stuff
+	renderPolygonFilled(obstacle, E);
+	renderPoint(finPoint);	
+	renderPoint(initPoint);
+	renderPolygon(window, 3);
+	
 	// Input first number and check
 	int check;
 	result >> check;
@@ -96,7 +170,7 @@ void draw_lp(void){
 		point1.z = 0;
 		path[i] = point1;
 		renderPoint(point1);
-		debugPoint(point1);
+		//debugPoint(point1);
 		i++;
 	}
 	
