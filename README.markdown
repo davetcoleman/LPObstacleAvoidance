@@ -15,3 +15,9 @@ Install:
 
 Run:
 	. autorun.sh
+
+
+MODIFYING
+--------
+
+Edit the obstacle.cpp file to change the intitial and final points and the number of edges in the polygon.
