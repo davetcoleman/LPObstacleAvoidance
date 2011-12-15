@@ -1,0 +1,4 @@
+ obstAll(1,1):   + 49.9998  points(1,1) + points(1,2) - 100 orer(1,1)  <= 519.998
+ obstAll(1,2):   + 0.505051 points(1,1) + points(1,2) - 100 orer(1,2)  <= 20.101
+ obstAll(1,3):   -          points(1,1) + points(1,2) - 100 orer(1,3)  <= -10
+ obstAll(1,4):   - 0.333333 points(1,1) - points(1,2) - 100 orer(1,4)  <= -23.3333

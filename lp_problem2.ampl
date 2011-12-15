@@ -2,9 +2,9 @@
 
 param N default 4; # number of time steps / points
 param NN := N - 1;
-param M := 100; # arbitrary large positive number
+param M := 1000; # arbitrary large positive number
 param m := 0.001; # arbitrary small number to prevent division by zero
-param E := 4;
+param E default 4; # number of edges in polygon
 
 set T := 1..N;	  # number of time steps / points
 set TT := 1..NN;  # one less than number of time steps
@@ -58,7 +58,7 @@ s.t. abs_diff5{t in TT}:  abs1[t,1] - abs1[t,2] - abs3[t] <= 0;
 s.t. abs_diff6{t in TT}: -abs1[t,1] + abs1[t,2] - abs3[t] <= 0;
 
 # Obstacle Constraints - Square
-#                                direct  * slope    * x        - direct * y            <= -direct * constraint + OR
+#                                  direction* slope   * x         -direction* y          <= -direction*constraint+ OR
 s.t. obstAll{t in TT, e in Edges}: obst[e,3]*obst[e,1]*points[t,1]-obst[e,3]*points[t,2] <= -obst[e,3]*obst[e,2] + M*orer[t,e];
 
 #.t. obst1{t in TT}:  -m4*points[t,1] + points[t,2] <=  (yo1-m4*xo1) + M*orer[t,3]; # x_min

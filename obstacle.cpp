@@ -5,14 +5,13 @@ void draw_lp(void){
 
 	// Draw initial point
 	coord initPoint;
-	initPoint.x = 20; initPoint.y = 5; initPoint.z = 0;
+	initPoint.x = 10; initPoint.y = 5; initPoint.z = 0;
 	
 	// Draw final point
 	coord finPoint;
-	finPoint.x = 16; finPoint.y = 25; finPoint.z = 0;
+	finPoint.x = 16; finPoint.y = 30; finPoint.z = 0;
 
 	// Calc distance between two points to get number of needed points for program
-	//int N = sqrt(finPoint.x - initPoint.x, 2) + pow(finPoint.y - initPoint.y, 2) );
 	int N = 1.5*abs(finPoint.x - initPoint.x) + abs(finPoint.y - initPoint.y);
 	
 	// Draw coordinates
@@ -26,17 +25,23 @@ void draw_lp(void){
 	max.x = 30; max.y = 30; max.z = 30;
 	
 	// Draw polygon of E edges
-	int E = 4;
+	int E = 5;
 	coord obstacle[E];
 	obstacle[0].x = 10; obstacle[0].y = 15; obstacle[0].z = 0; // bottom left, counter clockwise
 	obstacle[1].x = 20; obstacle[1].y = 10; obstacle[1].z = 0;
 	obstacle[2].x = 25; obstacle[2].y = 15; obstacle[2].z = 0;
-	obstacle[3].x = 10; obstacle[3].y = 20; obstacle[3].z = 0;
+	obstacle[3].x = 20; obstacle[3].y = 20; obstacle[3].z = 0;
+	obstacle[4].x = 10; obstacle[4].y = 18; obstacle[4].z = 0;	
 
+   	renderPolygonFilled(obstacle, E);
+
+	//return;
+		
 	// Output points to data file for GLPK
 	ofstream data("data.dat");
 	data << "data;\n\n";
 	data << "param N := " << N << ";\n";
+	data << "param E := " << E << ";\n";
 	
 	printCoord(initPoint, "i", data);
 	printCoord(finPoint, "f", data);
@@ -46,13 +51,6 @@ void draw_lp(void){
 	int x_max = 0;
 	int x_min = 0;
 
-	/*
-	obstacle[0].x = 10; obstacle[0].y = 15; obstacle[0].z = 0; // bottom left, counter clockwise
-	obstacle[1].x = 20; obstacle[1].y = 10; obstacle[1].z = 0;
-	obstacle[2].x = 25; obstacle[2].y = 15; obstacle[2].z = 0;
-	obstacle[3].x = 10; obstacle[3].y = 20; obstacle[3].z = 0;
-	*/
-	
 	// First find the largest and smallest x and ensure the last x is not the same as the current one
 	for(int i = 0; i < E; ++i)
 	{
@@ -145,7 +143,7 @@ void draw_lp(void){
 
 	
 	// Draw initial stuff
-	renderPolygonFilled(obstacle, E);
+
 	renderPoint(finPoint);	
 	renderPoint(initPoint);
 	renderPolygon(window, 3);

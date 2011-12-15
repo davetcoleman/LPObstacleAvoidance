@@ -11,7 +11,7 @@ void keyOperations (void) {
 }
 
 void renderPolygonFilled (coord point[], size_t num_points) {
-   	glBegin(GL_QUADS); // Start drawing a quad primitive
+   	glBegin(GL_POLYGON); // Start drawing a quad primitive
 	
 	glColor3f(0.5f, 0.5f, 0.5f); // Grey
 
